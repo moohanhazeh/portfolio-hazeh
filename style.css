@@ -425,3 +425,12 @@ body {
   .cards { grid-template-columns: 1fr; }
   .guest-form { grid-template-columns: 1fr; }
 }
+
+/* ===== 맨 아래 관리자 링크 ===== */
+.admin-link {
+  margin: 24px 0 0;
+  text-align: center;
+  font-size: 12px;
+}
+.admin-link a { color: var(--muted); text-decoration: none; }
+.admin-link a:hover { color: var(--blue); }

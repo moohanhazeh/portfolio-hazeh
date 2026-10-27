@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>관리자 | 포트폴리오</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* 관리자 화면에만 쓰는 모양. 색·글꼴은 style.css 를 그대로 쓴다. */
+    .admin .sheet { display: block; margin-bottom: 32px; }
+    .admin .big-title { font-size: 28px; }
+    .narrow { max-width: 420px; margin: 0 auto; }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .topbar a { color: var(--blue); font-size: 14px; }
+    .who { color: var(--muted); font-size: 14px; }
+
+    .field { display: grid; gap: 6px; margin-bottom: 14px; }
+    .field label { font-size: 13px; font-weight: 600; }
+    .field input[type="text"],
+    .field input[type="email"],
+    .field input[type="password"],
+    .field input[type="number"],
+    .field textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font: inherit;
+      font-size: 14px;
+    }
+    .field textarea { min-height: 80px; resize: vertical; }
+    .field input:focus, .field textarea:focus { outline: 2px solid var(--blue); outline-offset: -1px; }
+    .hint { color: var(--muted); font-size: 12px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 20px; }
+
+    .btn {
+      padding: 9px 18px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover { border-color: var(--blue); color: var(--blue); }
+    .btn:disabled { opacity: 0.5; cursor: default; }
+    .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .btn.danger:hover { border-color: var(--heart); color: var(--heart); }
+    .btn.small { padding: 4px 10px; font-size: 12px; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+    .status { min-height: 1.6em; margin: 10px 0 0; color: var(--muted); font-size: 13px; }
+    .status.error { color: var(--heart); }
+
+    /* 사진·파일 고르기 */
+    .file-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+    .preview {
+      width: 96px;
+      height: 96px;
+      border-radius: 14px;
+      background: #d9dce1;
+      overflow: hidden;
+      flex: none;
+    }
+    .preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .preview.wide { width: 140px; height: 88px; border-radius: 8px; }
+    .current { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+    .current a { color: var(--blue); }
+
+    /* 카드 목록 */
+    .admin-list { list-style: none; margin: 0; padding: 0; }
+    .admin-item {
+      display: grid;
+      grid-template-columns: 120px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+    }
+    .admin-item .thumb-view { border-radius: 8px; overflow: hidden; }
+    .admin-item h4 { margin: 0 0 2px; font-size: 15px; }
+    .admin-item .meta { margin: 0; color: var(--blue); font-size: 12px; font-weight: 700; }
+    .admin-item .likes { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .admin-item .likes b { color: var(--heart); }
+    .item-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+    .form-box {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .form-box h3 { margin: 0 0 16px; font-size: 16px; }
+
+    .guest-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 800px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .admin-item { grid-template-columns: 1fr; }
+      .item-actions { justify-content: flex-start; }
+      .form-box { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page admin">
+
+    <!-- 1. 로그인 -->
+    <section class="sheet" id="login-view" hidden>
+      <div class="narrow">
+        <h1 class="big-title">ADMIN</h1>
+        <div class="field">
+          <label for="login-email">이메일</label>
+          <input type="email" id="login-email" autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="login-password">비밀번호</label>
+          <input type="password" id="login-password" autocomplete="current-password">
+        </div>
+        <button type="button" class="btn primary" id="login-button">로그인</button>
+        <p class="status" id="login-status"></p>
+        <p class="hint"><a href="index.html">← 방문자 화면으로</a></p>
+      </div>
+    </section>
+
+    <!-- 2. 관리자가 아닐 때 -->
+    <section class="sheet" id="denied-view" hidden>
+      <div class="narrow">
+        <h1 class="big-title">ADMIN</h1>
+        <p>관리자만 쓸 수 있어요.</p>
+        <p class="who" id="denied-email"></p>
+        <button type="button" class="btn" id="denied-logout">로그아웃</button>
+      </div>
+    </section>
+
+    <!-- 3. 관리자 화면 -->
+    <div id="admin-view" hidden>
+      <div class="topbar">
+        <a href="index.html" target="_blank" rel="noopener">방문자 화면 보기 ↗</a>
+        <div class="actions">
+          <span class="who" id="admin-email"></span>
+          <button type="button" class="btn small" id="logout-button">로그아웃</button>
+        </div>
+      </div>
+
+      <!-- 프로필 -->
+      <section class="sheet">
+        <h2 class="big-title">PROFILE</h2>
+
+        <div class="field">
+          <label>프로필 사진</label>
+          <div class="file-row">
+            <div class="preview" id="photo-preview"></div>
+            <div>
+              <input type="file" id="photo-file" accept="image/png,image/jpeg,image/webp,image/gif">
+              <p class="hint">이미지(PNG·JPG·WEBP·GIF), 10MB까지. 고른 뒤 아래 저장을 누르면 올라가요.</p>
+              <button type="button" class="btn small danger" id="photo-clear">사진 빼기</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field"><label for="p-name">이름</label><input type="text" id="p-name"></div>
+          <div class="field"><label for="p-title">직함</label><input type="text" id="p-title"></div>
+          <div class="field"><label for="p-career_badge">경력 배지</label><input type="text" id="p-career_badge"></div>
+          <div class="field"><label for="p-email">이메일</label><input type="text" id="p-email"></div>
+          <div class="field"><label for="p-phone">연락처</label><input type="text" id="p-phone"></div>
+          <div class="field"><label for="p-location">위치</label><input type="text" id="p-location"></div>
+        </div>
+        <div class="field">
+          <label for="p-headline">한 줄 소개 제목</label>
+          <input type="text" id="p-headline">
+          <span class="hint">이 안에 이름이 들어 있으면 방문자 화면에서 이름에 파란 밑줄이 생겨요.</span>
+        </div>
+        <div class="field"><label for="p-intro">소개 글</label><textarea id="p-intro"></textarea></div>
+        <div class="grid-3">
+          <div class="field"><label for="p-education">EDUCATION</label><textarea id="p-education"></textarea></div>
+          <div class="field"><label for="p-skills">SKILLS &amp; TOOLS</label><textarea id="p-skills"></textarea></div>
+          <div class="field"><label for="p-experience">EXPERIENCE</label><textarea id="p-experience"></textarea></div>
+        </div>
+        <div class="field"><label for="p-quote">맨 아래 인용</label><input type="text" id="p-quote"></div>
+
+        <button type="button" class="btn primary" id="profile-save">프로필 저장</button>
+        <p class="status" id="profile-status"></p>
+      </section>
+
+      <!-- 포트폴리오 카드 -->
+      <section class="sheet">
+        <h2 class="big-title">PORTFOLIO CARDS</h2>
+
+        <div class="form-box">
+          <h3 id="project-form-title">새 카드 추가</h3>
+          <div class="grid-3">
+            <div class="field"><label for="c-number">번호</label><input type="text" id="c-number" placeholder="01"></div>
+            <div class="field"><label for="c-category">분류</label><input type="text" id="c-category"></div>
+            <div class="field"><label for="c-sort_order">순서 (작을수록 앞)</label><input type="number" id="c-sort_order"></div>
+          </div>
+          <div class="field"><label for="c-title">제목 (꼭 적기)</label><input type="text" id="c-title"></div>
+          <div class="field"><label for="c-description">설명</label><textarea id="c-description"></textarea></div>
+          <div class="field">
+            <label for="c-tags">태그</label>
+            <input type="text" id="c-tags" placeholder="총괄 PM, UI/UX">
+            <span class="hint">쉼표(,)로 나눠 적어요.</span>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label>썸네일 이미지</label>
+              <div class="file-row">
+                <div class="preview wide" id="thumb-preview"></div>
+                <div>
+                  <input type="file" id="thumb-file" accept="image/png,image/jpeg,image/webp,image/gif">
+                  <p class="current" id="thumb-current"></p>
+                  <button type="button" class="btn small danger" id="thumb-clear">썸네일 빼기</button>
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <label>첨부 파일 (PDF 또는 이미지)</label>
+              <input type="file" id="attach-file" accept="application/pdf,image/png,image/jpeg,image/webp,image/gif">
+              <p class="current" id="attach-current"></p>
+              <div><button type="button" class="btn small danger" id="attach-clear">첨부 파일 빼기</button></div>
+            </div>
+          </div>
+          <p class="hint">파일은 10MB까지. 카드를 누르면 첨부 파일이 열리고, 없으면 썸네일이 열려요.</p>
+
+          <div class="actions">
+            <button type="button" class="btn primary" id="project-save">카드 저장</button>
+            <button type="button" class="btn" id="project-cancel">새로 쓰기</button>
+          </div>
+          <p class="status" id="project-status"></p>
+        </div>
+
+        <ul class="admin-list" id="project-list"></ul>
+      </section>
+
+      <!-- 방명록 -->
+      <section class="sheet">
+        <h2 class="big-title">GUESTBOOK</h2>
+        <p class="status" id="guest-admin-status"></p>
+        <ul class="guest-list" id="guest-admin-list"></ul>
+      </section>
+    </div>
+
+  </main>
+  <script src="admin.js"></script>
+</body>
+</html>
